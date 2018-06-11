@@ -12,9 +12,9 @@ var app = express();
 
 var mongoose = require('mongoose');
 
-if (!fs.existsSync('./env.sh')) {
-    throw new Error('env.sh file is missing');
-}
+// if (!fs.existsSync('./env.sh')) {
+//     throw new Error('env.sh file is missing');
+// }
 if (!process.env.MONGODB_URI) {
     throw new Error("MONGODB_URI is not in the environmental variables. Try running 'source env.sh'");
 }
@@ -26,7 +26,6 @@ mongoose.connection.on('error', function () {
     process.exit(1);
 });
 mongoose.connect(process.env.MONGODB_URI);
-
 
 // Handlabars setup
 app.engine('.hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }));
