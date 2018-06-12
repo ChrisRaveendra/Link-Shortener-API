@@ -26,6 +26,10 @@ router.get('/create-test-url', function (req, res) {
     });
 });
 
+router.get('/', function (req, res) {
+    res.send('Check out https://github.com/ChrisRaveendra/Link-Shortener-API/ for instructions on how to use service!')
+});
+
 router.post('/shorten', function (req, res) {
         if(!req.body.url) {
             console.log('missing info');
