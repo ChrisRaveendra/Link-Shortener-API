@@ -33,19 +33,12 @@ router.post('/shorten', function (req, res) {
             return;
         }
 
-        let newUrl = hashURL(req.body.url).substr(0,10) + '.short';
+        let newUrl = hashURL(req.body.url).substr(0,4);
         var url = new Urls({
             originalURL: req.body.url,
             shortURL: newUrl
         });
 
-        let hashCode = function (s) {
-            return s.split("").reduce(function (a, b) { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
-        }
-
-        console.log('hashcode: ', hashCode(req.body.url));
-        console.log("hashurl: ", hashURL(req.body.url) )
-        console.log('url: ', url);
         Urls.findOne({ originalURL: req.body.url }, function (err, result) {
             if(result) {
                 console.log('URL already shortened');
@@ -63,7 +56,7 @@ router.post('/shorten', function (req, res) {
                     }
 
                     console.log('here is what we are putting in as originalURL: ', req.body.url);
-                    //check database for existing email
+                    //check database for existing url
                     Urls.find({ originalURL: req.body.url }, function (err2, res2) {
                         if (res2) {
                             console.log('URL already shortened');
@@ -73,7 +66,7 @@ router.post('/shorten', function (req, res) {
                         }
 
                         else {
-                            console.log('weird error');
+                            console.log('An unexpected error has occurred');
                             res.status(500).json(err2);
                             return;
                         }
@@ -83,7 +76,7 @@ router.post('/shorten', function (req, res) {
 
                 else {
                     res.status(200);
-                    res.send(`Success: created a URL: ${url.originalURL} ${url.shortURL}`);
+                    res.send(`Success: created a URL: ${url.originalURL}, it can be accessed via shortURL: ${url.shortURL}`);
                 }
             });
         });
@@ -93,10 +86,10 @@ router.post('/shorten', function (req, res) {
 router.get('/shorten', function (req,res) {
     Urls.findOne({originalURL: req.query.url}, function(err,result){
         if (!result) {
-            res.send('cannot find this url')
+            res.send(`Cannot find a shortUrl for the provided url: ${req.query.url}, make a POST request to create a short url!`)
         }
         else {
-            res.send(result.shortURL);
+            res.send(`Your link: ${req.query.url} can be accessed at following shortURL in our service: ${result.shortURL}`);
         }
     })
 })
@@ -105,13 +98,13 @@ router.delete('/shorten', function (req,res) {
     Urls.findOneAndRemove({ originalURL: req.query.url }, function (err, result) {
         if (!result) {
             console.log("Can't find matching URL to delete in Database", err);
-            res.send(`failure to remove ${req.query.url}, URL not found`);
+            res.send(`Failure to remove ${req.query.url}, URL not found`);
         }
 
         else {
             console.log('search successful!', res);
 
-            res.send('delete successful');
+            res.send(`${req.query.url} & it's shortURL have been successfully deleted from our service.`);
         }
     });
 })
@@ -119,11 +112,10 @@ router.delete('/shorten', function (req,res) {
 router.get('/:shortURL', function (req, res) {
     Urls.findOne({ shortURL: req.params.shortURL }, function (err, result) {
         if (!result) {
-            res.send(`We don't currently have this shortURL in out DB`)
+            res.send(`We don't currently have this shortURL (${req.params.shortURL}) in out DB`)
         }
         else {
-            res.send(`The link you provided: '${req.params.shortURL}' redirects to be the below link! \n${result.originalURL}`);
-            // res.status(301).redirect(`${req.params.originalURL}`);
+            res.redirect('http://'+ result.originalURL);
         }
 
     }); 
